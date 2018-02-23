@@ -1,0 +1,30 @@
+
+
+#results{
+ width: 100%;
+ height: 900px;
+}
+
+#results-container{
+    width: 50%;
+    float: left;
+}
+
+#left-container{
+    width: 50%;
+    float: left;
+}
+
+.page-container{
+    width: 100%;
+}
+
+.panels{
+    padding: 10px;
+}
+
+.header{
+    color: #2b669a;
+    font-size: larger;
+    font-family: "Cambria";
+}

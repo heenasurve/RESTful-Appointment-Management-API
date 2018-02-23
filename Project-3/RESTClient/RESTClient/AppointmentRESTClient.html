@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="style.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="bootstrap/js/bootstrap.min.js" ></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script language="javascript">
+        var xmlhttp;
+        var parser;
+        function getServices(){
+            xmlhttp = new XMLHttpRequest();
+            var url = "http://localhost:8080/AppointmentManager/webresources/Services/";
+            xmlhttp.open('GET',url,true);
+            xmlhttp.send(null);
+            xmlhttp.onreadystatechange = function() {
+
+                if (xmlhttp.readyState == 4) {
+                    if (xmlhttp.status == 200) {
+                        var response = xmlhttp.responseText;
+                        $("#results").val(response);
+                    }
+                }
+            }
+        }
+
+        function getAppointments() {
+            xmlhttp = new XMLHttpRequest();
+            var url = "http://localhost:8080/AppointmentManager/webresources/Services/Appointments/";
+            xmlhttp.open('GET',url,true);
+            xmlhttp.send(null);
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        var response =  xmlhttp.responseText;
+                        $("#results").val(response);
+                    }
+                    else
+                    $("#results").val("Error ->" + xmlhttp.responseText);
+                }
+        }
+
+        function getSpecificAppointment() {
+            xmlhttp = new XMLHttpRequest();
+            var apptId = $("#apptId").val();
+            console.log(apptId);
+            var url = "http://localhost:8080/AppointmentManager/webresources/Services/Appointment/"+apptId;
+            console.log(url);
+            xmlhttp.open('GET',url,true);
+            xmlhttp.send(null);
+            xmlhttp.onreadystatechange = function(){
+                if (xmlhttp.readyState == 4 &&  xmlhttp.status == 200){
+                        var response =  xmlhttp.responseText;
+                        $("#results").val(response);
+                    }
+                else
+                    $("#results").val("Error ->" + xmlhttp.responseText);
+                }
+        }
+
+        function updateAppointment() {
+
+            var apptId = $("#apptIdUpdate").val();
+
+            var xmlDoc = document.implementation.createDocument("", "",null);
+            var root = xmlDoc.createElement("AppointmentList");
+
+            xmlDoc.appendChild(root);
+            var appointment = xmlDoc.createElement("appointment");
+            root.appendChild(appointment);
+
+            var appointment = xmlDoc.getElementsByTagName("appointment")[0];
+            var apptAttrId = xmlDoc.createAttribute("id");
+            var apptAttrDate = xmlDoc.createAttribute("date");
+            var apptAttrTime = xmlDoc.createAttribute("time");
+            apptAttrDate.nodeValue = document.getElementById("date").value;
+            apptAttrTime.nodeValue = document.getElementById("time").value;
+            appointment.setAttributeNode(apptAttrDate);
+            appointment.setAttributeNode(apptAttrTime);
+
+            var patient = xmlDoc.createElement("patient");
+            var patientAttrId = xmlDoc.createAttribute("id");
+            patientAttrId.nodeValue = document.getElementById("patientId").value;
+            var patientElemName = xmlDoc.createElement("name");
+            patientElemName.textContent = document.getElementById("patientName").value;
+            var patientElemAddress = xmlDoc.createElement("address");
+            patientElemAddress.textContent = document.getElementById("patientAddr").value;
+            var patientElemInsurance = xmlDoc.createElement("insurance");
+            patientElemInsurance.textContent = document.getElementById("patientInsurance").value;
+            var patientElemDob = xmlDoc.createElement("dob");
+            patientElemDob.textContent = document.getElementById("patientDob").value;
+            patient.setAttributeNode(patientAttrId);
+            patient.appendChild(patientElemName);
+            patient.appendChild(patientElemAddress);
+            patient.appendChild(patientElemInsurance);
+            patient.appendChild(patientElemDob);
+
+            var phlebo = xmlDoc.createElement("phlebotomist");
+            var phleboAttrId = xmlDoc.createAttribute("id");
+            phleboAttrId.nodeValue = document.getElementById("phlebotomistId").value;
+            var phleboElemName = xmlDoc.createElement("name");
+            phleboElemName.textContent = document.getElementById("phlebotomistName").value;
+            phlebo.setAttributeNode(phleboAttrId);
+            phlebo.appendChild(phleboElemName);
+
+            var psc = xmlDoc.createElement("psc");
+            var pscAttrId = xmlDoc.createAttribute("id");
+            pscAttrId.nodeValue = document.getElementById("pscId").value;
+            var pscElemName = xmlDoc.createElement("name");
+            pscElemName.textContent = document.getElementById("pscName").value;
+            psc.setAttributeNode(pscAttrId);
+            psc.appendChild(pscElemName);
+
+            var allLabTests = xmlDoc.createElement("allLabTests");
+            var test = xmlDoc.createElement("appointmentLabTest");
+            var testAttrId = xmlDoc.createAttribute("labTestId");
+            testAttrId.nodeValue = $("#testId").val();
+            var testAttrDxCode = xmlDoc.createAttribute("dxcode");
+            testAttrDxCode.nodeValue = $("#diagCode").val();
+            var testAttrApptId = xmlDoc.createAttribute("appointmentId");
+            testAttrApptId.nodeValue = apptId;
+            test.setAttributeNode(testAttrId);
+            test.setAttributeNode(testAttrDxCode);
+            test.setAttributeNode(testAttrApptId);
+            allLabTests.appendChild(test);
+
+            appointment.appendChild(patient);
+            appointment.appendChild(phlebo);
+            appointment.appendChild(psc);
+            appointment.appendChild(allLabTests);
+
+            var xmlhttp = new XMLHttpRequest();
+            var url = "http://localhost:8080/AppointmentManager/webresources/Services/Appointment/"+apptId;
+            xmlhttp.open("PUT",url,true);
+            xmlhttp.setRequestHeader("Content-type","application/xml");
+
+            xmlhttp.onreadystatechange = function(){
+                if(xmlhttp.readyState==4 && xmlhttp.status==200){
+                    var response = xmlhttp.responseText;
+                    $("#results").val(response);
+                }
+            };
+            xmlhttp.send(new XMLSerializer().serializeToString(xmlDoc.documentElement));
+
+        }
+
+        function addAppointment(){
+            var xmlDoc = document.implementation.createDocument("", "",null);
+            var root = xmlDoc.createElement("appointment");
+
+            var date = xmlDoc.createElement("date");
+            date.textContent = $("#Adddate").val();
+            var time = xmlDoc.createElement("time");
+            time.textContent = $("#Addtime").val();
+            var patient = xmlDoc.createElement("patientId");
+            patient.textContent = $("#AddpatientId").val();
+            var physician = xmlDoc.createElement("physicianId");
+//            physician.textContent = $("#AddphysicianId").val();
+//            var psc = xmlDoc.createElement("pscId");
+            psc.textContent = $("#AddpscId").val();
+            var phlebo = xmlDoc.createElement("phlebotomistId");
+            phlebo.textContent = $("#AddphlebotomistId").val();
+            var labTests = xmlDoc.createElement("labTests");
+            var test = xmlDoc.createElement("test");
+            var testAttrId = xmlDoc.createAttribute("id");
+            testAttrId.nodeValue = $("#AddtestId").val();
+            var testAttrDxCode = xmlDoc.createAttribute("dxcode");
+            testAttrDxCode.nodeValue = $("#AdddiagCode").val();
+            test.setAttributeNode(testAttrId);
+            test.setAttributeNode(testAttrDxCode);
+            labTests.appendChild(test);
+
+            root.appendChild(date);
+            root.appendChild(time);
+            root.appendChild(patient);
+            root.appendChild(physician);
+            root.appendChild(psc);
+            root.appendChild(phlebo);
+            root.appendChild(labTests);
+
+            xmlDoc.appendChild(root);
+
+            var xmlhttp = new XMLHttpRequest();
+            var url = "http://localhost:8080/AppointmentManager/webresources/Services/Appointments/";
+            xmlhttp.open("POST",url,true);
+            xmlhttp.setRequestHeader("Content-type","application/xml");
+
+            xmlhttp.onreadystatechange = function(){
+                if(xmlhttp.readyState==4 && xmlhttp.status==200){
+                    var response = xmlhttp.responseText;
+                    $("#results").val(response);
+                }
+            };
+            xmlhttp.send(new XMLSerializer().serializeToString(xmlDoc.documentElement));
+        }
+
+    </script>
+</head>
+<body>
+    <div class="container page-container">
+        <div class="jumbotron">
+            <p class="header">Welcome to LAMS Appointment Service</p>
+        </div>
+        <div class="container" id="left-container">
+            <div class="Services">
+                <div class="panel panel-default panels">
+                    <h3><div class="panel-heading">Services</div></h3>
+                    <button class="btn btn-default" onclick="getServices()">Get Link to Services</button>
+                </div>
+            </div>
+
+            <div class="get-appointments">
+                <div class="panel panel-default panels">
+                    <h3><div class="panel-heading">Get All Appointments</div></h3>
+                    <button class="btn btn-default" onclick="getAppointments()">Get all Appointments</button>
+                </div>
+            </div>
+
+            <div class="get-appointments">
+                <div class="panel panel-default panels">
+                    <h3><div class="panel-heading">Get Specific Appointments</div></h3>
+                    <div class="form-group row">
+                        <label for="apptId" class="col-md-2 col-form-label">Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="apptId" name="apptId"
+                                   placeholder="720" required/><br>
+                        </div>
+                    </div>
+                    <button class="btn btn-default" onclick="getSpecificAppointment()">Get Specific Appointment</button>
+                </div>
+            </div>
+
+            <div class="update-appointment">
+                <div class="panel panel-default panels">
+                    <h3><div class="panel-heading">Update Appointment</div></h3>
+                    <div class="form-group row">
+                        <label for="apptIdUpdate" class="col-md-2 col-form-label">Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="apptIdUpdate" name="apptIdUpdate"
+                                   placeholder="720" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="date" class="col-md-2 col-form-label">Date</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="date" name="date"
+                                   placeholder="2017-06-06" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="time" class="col-md-2 col-form-label">Time</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="time" name="time"
+                                   placeholder="10:00" required/><br>
+                        </div>
+                    </div>
+                    <div class="panel panel-default panels">
+                        <h3><div class="panel-heading">Patient Info</div></h3>
+                        <div class="form-group row">
+                            <label for="patientId" class="col-md-2 col-form-label">Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="patientId" name="patientId"
+                                       placeholder="220" required/><br>
+                            </div>
+                            <label for="patientAddr" class="col-md-2 col-form-label">Address</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="patientAddr" name="patientAddr" required/><br>
+                            </div>
+
+                            <label for="patientName" class="col-md-2 col-form-label">Patient Name</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="patientName" name="patientName" required/><br>
+                            </div>
+
+                            <label for="patientInsurance" class="col-md-2 col-form-label">Insurance ? </label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="patientInsurance" name="patientInsurance" required/><br>
+                            </div>
+
+                            <label for="patientDob" class="col-md-2 col-form-label">Date of birth </label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="patientDob" name="patientDob" required/><br>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="panel panel-default panels">
+                        <h3><div class="panel-heading">Physician Info</div></h3>
+                        <div class="form-group row">
+                            <label for="physicianId" class="col-md-2 col-form-label">Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="physicianId" name="physicianId"
+                                       placeholder="20" required/><br>
+                            </div>
+                        </div>
+                    </div>-->
+                    <div class="panel panel-default panels">
+                        <h3><div class="panel-heading">PSC Info</div></h3>
+                        <div class="form-group row">
+                            <label for="pscId" class="col-md-2 col-form-label">Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="pscId" name="pscId"
+                                       placeholder="520" required/><br>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="pscName" class="col-md-2 col-form-label">Name</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="pscName" name="pscName" required/><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default panels">
+                        <h3><div class="panel-heading">Phlebotomist Info</div></h3>
+                        <div class="form-group row">
+                            <label for="phlebotomistId" class="col-md-2 col-form-label">Phlebotomist Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="phlebotomistId" name="phlebotomistId"
+                                       placeholder="110" required/><br>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="phlebotomistName" class="col-md-2 col-form-label">Name</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="phlebotomistName" name="phlebotomistName" required/><br>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default panels">
+                        <h3><div class="panel-heading">Lab test data</div></h3>
+                        <div class="form-group row">
+                            <label for="testId" class="col-md-2 col-form-label">Test Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="testId" name="testId"
+                                       placeholder="86900" required/><br>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="diagCode" class="col-md-2 col-form-label">Diagnosis Code</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="diagCode" name="diagCode"
+                                       placeholder="292.9" required/><br>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-default" onclick="updateAppointment()">Update appointment</button>
+                </div>
+            </div>
+
+            <div class="add-appointment">
+                <div class="panel panel-default panels">
+                    <h3><div class="panel-heading">Add Appointment</div></h3>
+                    <div class="form-group row">
+                        <label for="Adddate" class="col-md-2 col-form-label">Date</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="Adddate" name="Adddate"
+                                   placeholder="2017-06-06" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="Addtime" class="col-md-2 col-form-label">Time</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="Addtime" name="Addtime"
+                                   placeholder="10:00" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="AddpatientId" class="col-md-2 col-form-label">Patient Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="AddpatientId" name="AddpatientId"
+                                   placeholder="220" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="AddphysicianId" class="col-md-2 col-form-label">Physician Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="AddphysicianId" name="AddphysicianId"
+                                   placeholder="20" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="AddpscId" class="col-md-2 col-form-label">PSC Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="AddpscId" name="AddpscId"
+                                   placeholder="520" required/><br>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="AddphlebotomistId" class="col-md-2 col-form-label">Phlebotomist Id</label>
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="AddphlebotomistId" name="AddphlebotomistId"
+                                   placeholder="110" required/><br>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default panels">
+                        <h3><div class="panel-heading">Lab test data</div></h3>
+                        <div class="form-group row">
+                            <label for="AddtestId" class="col-md-2 col-form-label">Test Id</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="AddtestId" name="AddtestId"
+                                       placeholder="86900" required/><br>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="AdddiagCode" class="col-md-2 col-form-label">Diagnosis Code</label>
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" id="AdddiagCode" name="AdddiagCode"
+                                       placeholder="292.9" required/><br>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <button class="btn btn-default" onclick="addAppointment()">Add appointment</button>
+                </div>
+            </div>
+        </div>
+        <div id="results-container">
+            <textarea id="results">Results go here</textarea>
+        </div>
+    </div>
+
+</body>
+</html>
